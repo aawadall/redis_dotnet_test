@@ -7,10 +7,12 @@ namespace RedisAPI.Data
     public class RedisPlatformRepo : IPlatformRepo
     {
         private readonly IConnectionMultiplexer _redis;
+        private readonly IDatabase _db;
 
         public RedisPlatformRepo(IConnectionMultiplexer redis)
         {
             _redis = redis;
+            _db = _redis.GetDatabase();
         }
         public void CreatePlatform(Platform plat)
         {
@@ -19,22 +21,24 @@ namespace RedisAPI.Data
                 throw new ArgumentOutOfRangeException(nameof(plat));
             }
 
-            var db = _redis.GetDatabase(); // get reference to default database 
+            //var db = _redis.GetDatabase(); // get reference to default database 
             var serialPlat = JsonSerializer.Serialize(plat); // serialize the platform object
 
-            db.StringSet(plat.Id, serialPlat); // store the serialized platform object in the database
+            _db.StringSet(plat.Id, serialPlat); // store the serialized platform object in the database
         }
 
         public IEnumerable<Platform> GetAllPlatforms()
         {
             throw new NotImplementedException();
+
+            _db.
         }
 
         public Platform? GetPlatformById(string id)
         {
             // TODO refactor db into a centeralized location
-            var db = _redis.GetDatabase(); // get reference to default database
-            var plat = db.StringGet(id); // get the serialized platform object from the database
+            //var db = _redis.GetDatabase(); // get reference to default database
+            var plat = _db.StringGet(id); // get the serialized platform object from the database
 
             // check null 
             if (!string.IsNullOrEmpty(plat))
