@@ -1,0 +1,6 @@
+# Ignoring VS Code settings
+.vscode/
+
+# Ignoring .net binaries
+bin/
+obj/
