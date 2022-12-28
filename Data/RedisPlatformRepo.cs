@@ -16,7 +16,7 @@ namespace RedisAPI.Data
         }
         public void CreatePlatform(Platform plat)
         {
-            if(plat == null)
+            if (plat == null)
             {
                 throw new ArgumentOutOfRangeException(nameof(plat));
             }
@@ -24,37 +24,32 @@ namespace RedisAPI.Data
             //var db = _redis.GetDatabase(); // get reference to default database 
             var serialPlat = JsonSerializer.Serialize(plat); // serialize the platform object
 
-            _db.StringSet(plat.Id, serialPlat); // store the serialized platform object in the database
-            // add key to set 
-            _db.SetAdd("PlatformsSet", serialPlat);
+            _db.HashSet("hashplatform", new HashEntry[] {
+                new HashEntry( plat.Id, serialPlat)
+            });
         }
 
-        public IEnumerable<Platform> GetAllPlatforms()
+        public IEnumerable<Platform>? GetAllPlatforms()
         {
-            
-            // get all platforms from set
-            var result = _db.SetMembers("PlatformsSet");
 
-            if (result != null)
+            var completHash = _db.HashGetAll("hashplatform");
+
+            if (completHash.Length > 0)
             {
-                return result.Select(x => JsonSerializer.Deserialize<Platform>(x));
+                var obj = Array.ConvertAll(completHash, x => JsonSerializer.Deserialize<Platform>(x.Value));
+                return obj.ToList();
             }
+            return null;
 
-            return null;            
         }
 
         public Platform? GetPlatformById(string id)
         {
-            // TODO refactor db into a centeralized location
-            //var db = _redis.GetDatabase(); // get reference to default database
-            var plat = _db.StringGet(id); // get the serialized platform object from the database
-
-            // check null 
-            if (!string.IsNullOrEmpty(plat))
+            var plat = _db.HashGet("hashplatform", id);
+            if (plat.HasValue)
             {
-                return JsonSerializer.Deserialize<Platform>(plat); // deserialize the platform object
+                return JsonSerializer.Deserialize<Platform>(plat);
             }
-
             return null;
         }
     }
