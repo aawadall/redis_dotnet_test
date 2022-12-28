@@ -33,7 +33,14 @@ namespace RedisAPI.Data
         {
             
             // get all platforms from set
-            return _db.SetMembers("PlatformsSet").Select(p => JsonSerializer.Deserialize<Platform>(p));            
+            var result = _db.SetMembers("PlatformsSet");
+
+            if (result != null)
+            {
+                return result.Select(x => JsonSerializer.Deserialize<Platform>(x));
+            }
+
+            return null;            
         }
 
         public Platform? GetPlatformById(string id)
