@@ -25,13 +25,15 @@ namespace RedisAPI.Data
             var serialPlat = JsonSerializer.Serialize(plat); // serialize the platform object
 
             _db.StringSet(plat.Id, serialPlat); // store the serialized platform object in the database
+            // add key to set 
+            _db.SetAdd("PlatformsSet", serialPlat);
         }
 
         public IEnumerable<Platform> GetAllPlatforms()
         {
-            throw new NotImplementedException();
-
-            _db.
+            
+            // get all platforms from set
+            return _db.SetMembers("PlatformsSet").Select(p => JsonSerializer.Deserialize<Platform>(p));            
         }
 
         public Platform? GetPlatformById(string id)
